@@ -34,6 +34,7 @@ namespace LynraNamespace
         private const int cooldownTime = 30;
         private const double tweenSpeed = 0.2;
         private bool InjectionTimerDebounce = false;
+        private bool isInjected = false;
         private readonly Properties.Settings DS;
         private string selectedTab;
         private string selectedApi;
@@ -129,7 +130,7 @@ namespace LynraNamespace
 
                     pipeClient.Close();
                 }
-                catch (Exception ex) { }
+                catch (Exception) { }
             }
         }
 
@@ -279,7 +280,9 @@ namespace LynraNamespace
 
         private void InjectionTimer_Tick(object sender, EventArgs e)
         {
-            if (Api.IsInjected())
+            if (!Lynra.IsRobloxOpen()) isInjected = false;
+
+            if (Api.IsInjected() || isInjected)
             {
                 if (!InjectionTimerDebounce)
                 {
@@ -291,6 +294,14 @@ namespace LynraNamespace
                 }
             }
             else InjectionTimerDebounce = false;
+
+            // We've already put credits, plus it can be distracting
+
+            try
+            {
+                if (DS.API == "lynraApi") Execute("local hui = gethui() if hui:FindFirstChild(\"mgfdkkgkgidkfk\") then hui:WaitForChild(\"mgfdkkgkgidkfk\"):Destroy() end");
+            }
+            catch { }
         }
 
         public async void SetText(string text)
@@ -387,7 +398,11 @@ namespace LynraNamespace
             }
             else
             {
-                if (selectedApi == "lynraApi") Process.Start(Path.Combine(Application.StartupPath, "bin", "Injector.exe"));
+                if (selectedApi == "lynraApi")
+                {
+                    Process.Start(Path.Combine(Application.StartupPath, "bin", "Injector.exe"));
+                    isInjected = true;
+                }
                 else if (selectedApi == "Forlorn") Api.Inject();
             }
         }
